@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.ref == 'refs/heads/main'
-    environment: staging
+    # environment: staging  # Uncomment after creating staging environment in GitHub settings
 
     steps:
       - name: 📥 Checkout code
@@ -111,11 +111,12 @@ jobs:
           echo "📢 Deployment notification placeholder"
           echo "Status: ${{ job.status }}"
           echo "Configure Slack, Discord, or email notifications here"
-          # Example Slack notification:
-          # uses: 8398a7/action-slack@v3
-          # with:
-          #   status: ${{ job.status }}
-          #   webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          # 
+          # Example Slack notification (add SLACK_WEBHOOK_URL secret and uncomment):
+          # - uses: 8398a7/action-slack@v3
+          #   with:
+          #     status: [job.status]
+          #     webhook_url: [secrets.SLACK_WEBHOOK_URL]
 
   # Deploy to Production
   deploy-production:
@@ -123,7 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-push, deploy-staging]
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
-    environment: production
+    # environment: production  # Uncomment after creating production environment in GitHub settings
 
     steps:
       - name: 📥 Checkout code

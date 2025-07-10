@@ -168,18 +168,19 @@ jobs:
     if: always()
 
     steps:
-      - name: 📢 Notify Slack
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          status: ${{ job.status }}
-          text: |
-            🎉 New release published!
-            Version: ${{ github.ref_name }}
-            Repository: ${{ github.repository }}
-            Download: https://github.com/${{ github.repository }}/releases/latest
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      # Uncomment and add SLACK_WEBHOOK secret to enable Slack notifications
+      # - name: 📢 Notify Slack
+      #   uses: 8398a7/action-slack@v3
+      #   if: always()
+      #   with:
+      #     status: [job.status]
+      #     text: |
+      #       🎉 New release published!
+      #       Version: [github.ref_name]
+      #       Repository: [github.repository]
+      #       Download: https://github.com/[github.repository]/releases/latest
+      #   env:
+      #     SLACK_WEBHOOK: [secrets.SLACK_WEBHOOK]
 
       - name: 📧 Create release announcement issue
         uses: actions/github-script@v7
