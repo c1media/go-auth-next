@@ -229,20 +229,11 @@ jobs:
           go-version: "1.23"
           cache-dependency-path: authserver/go.sum
 
-      - name: 🔐 Configure GitHub token for Go modules
-        run: |
-          git config --global url."https://${{ secrets.GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          echo "GOPRIVATE=github.com/securecodewarrior/*" >> $GITHUB_ENV
-
       - name: 🔍 Run gosec security scanner
         working-directory: ./authserver
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-          go env -w GOPRIVATE=github.com/securecodewarrior/*
-          go env -w GONOSUMDB=github.com/securecodewarrior/*
-          go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+          # Install gosec from the correct repository
+          curl -sfL https://raw.githubusercontent.com/securecodewarrior/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
           $(go env GOPATH)/bin/gosec -fmt sarif -out gosec-results.sarif ./...
 
       - name: 📊 Upload gosec results
