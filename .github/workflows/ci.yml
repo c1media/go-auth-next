@@ -165,27 +165,7 @@ jobs:
     - name: 🐳 Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: 🏗️ Build backend Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./authserver
-        file: ./authserver/Dockerfile
-        push: false
-        tags: go-auth-backend:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: 🏗️ Build frontend Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./front-end
-        file: ./front-end/Dockerfile
-        push: false
-        tags: go-auth-frontend:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: 🏗️ Build single container image
+    - name: 🏗️ Build application container
       uses: docker/build-push-action@v5
       with:
         context: .

@@ -17,7 +17,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/go-auth-next
+  IMAGE_NAME: ${{ github.repository_owner }}/go-auth-template
 
 jobs:
   # Build and Push Docker Images
@@ -52,10 +52,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -63,36 +60,16 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=sha,prefix={{branch}}-
 
-    - name: 🏗️ Build and push backend image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./authserver
-        file: ./authserver/Dockerfile
-        push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: 🏗️ Build and push frontend image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./front-end
-        file: ./front-end/Dockerfile
-        push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: 🏗️ Build and push single container image
+    - name: 🏗️ Build and push application image
       id: build
       uses: docker/build-push-action@v5
       with:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
@@ -109,12 +86,17 @@ jobs:
     - name: 📥 Checkout code
       uses: actions/checkout@v4
 
+    - name: 🚀 Install Railway CLI
+      run: |
+        npm install -g @railway/cli
+
     - name: 🚀 Deploy to Railway (Staging)
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       run: |
         echo "🚀 Deploying to Railway staging environment..."
-        echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
-        # Add Railway deployment commands here
-        # railway up --service backend --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+        railway link ${{ secrets.RAILWAY_PROJECT_ID }}
+        railway up --detach
 
     - name: 🧪 Run smoke tests
       run: |

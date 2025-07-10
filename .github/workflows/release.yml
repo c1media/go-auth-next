@@ -71,21 +71,24 @@ jobs:
       with:
         node-version: '18'
 
-    - name: 🏗️ Build backend binaries
-      working-directory: ./authserver
+    - name: 🏗️ Build application binaries
       run: |
-        # Build for multiple platforms
-        GOOS=linux GOARCH=amd64 go build -o ../release/authserver-linux-amd64 cmd/server/main.go
-        GOOS=darwin GOARCH=amd64 go build -o ../release/authserver-darwin-amd64 cmd/server/main.go
-        GOOS=darwin GOARCH=arm64 go build -o ../release/authserver-darwin-arm64 cmd/server/main.go
-        GOOS=windows GOARCH=amd64 go build -o ../release/authserver-windows-amd64.exe cmd/server/main.go
-
-    - name: 🏗️ Build frontend
-      working-directory: ./front-end
-      run: |
+        mkdir -p release
+        
+        # Build Go backend for multiple platforms
+        cd authserver
+        GOOS=linux GOARCH=amd64 go build -o ../release/go-auth-template-linux-amd64 cmd/server/main.go
+        GOOS=darwin GOARCH=amd64 go build -o ../release/go-auth-template-darwin-amd64 cmd/server/main.go
+        GOOS=darwin GOARCH=arm64 go build -o ../release/go-auth-template-darwin-arm64 cmd/server/main.go
+        GOOS=windows GOARCH=amd64 go build -o ../release/go-auth-template-windows-amd64.exe cmd/server/main.go
+        cd ..
+        
+        # Build frontend
+        cd front-end
         npm ci
         npm run build
         tar -czf ../release/frontend-build.tar.gz .next
+        cd ..
 
     - name: 📦 Create deployment package
       run: |
