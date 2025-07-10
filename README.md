@@ -35,52 +35,60 @@ go-auth-template/
 
 ## 🛠️ Quick Start
 
-### Option 1: Docker (Recommended)
+### Prerequisites
+- Go 1.21+
+- Node.js 18+
+- PostgreSQL
+- Redis (optional)
+- Make (for development commands)
+
+### Setup
 ```bash
 # Clone and setup
 git clone <repository-url>
 cd go-auth-template
 
 # Setup environment
-cp .env.example .env
-# Edit .env with your values
-
-# Start with Docker Compose
-docker-compose up -d
-
-# Or build and run single container
-./docker-build.sh single
-docker run -p 3000:3000 -p 8080:8080 go-auth-template:latest
-```
-
-### Option 2: Manual Setup
-
-#### Prerequisites
-- Go 1.21+
-- Node.js 18+
-- PostgreSQL
-- Redis (optional)
-
-#### Backend Setup
-```bash
-cd authserver
-cp .env.example .env
-# Edit .env with your database credentials
-go mod download
-go run cmd/server/main.go
-```
-
-#### Frontend Setup
-```bash
-cd front-end
-npm install
 cp .env.example .env.local
-# Edit .env.local with your API URL
-npm run dev
+# Edit .env.local with your values
+
+# Install dependencies and tools
+make install-deps
+make install-tools
+
+# Create database
+createdb localDB
+
+# Start development environment
+make dev
+```
+
+### Development Commands
+```bash
+# Start both backend and frontend
+make dev
+
+# Start individually
+make run-backend      # Backend only
+make run-backend-air  # Backend with hot reload
+make run-frontend     # Frontend only
+
+# Database operations
+make migrate          # Run migrations
+make migrate-only     # Migrations only (no server)
+
+# Testing
+make test            # Run all tests
+make test-ci         # Test with act (local CI)
+
+# Utilities
+make stop            # Stop all processes
+make clean           # Clean build artifacts
+make help            # Show all commands
 ```
 
 ### Access the Application
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:3000 (or 3001 if 3000 is busy)
 - Backend API: http://localhost:8080
 
 ## 📚 Documentation
@@ -92,15 +100,28 @@ npm run dev
 
 ### Environment Variables
 
-**Backend (.env)**
-- `DATABASE_URL` - PostgreSQL connection string
-- `REDIS_URL` - Redis connection string (optional)
-- `JWT_SECRET` - JWT signing secret
-- `RESEND_API_KEY` - Email service API key
+All environment variables are configured in the root `.env.local` file:
 
-**Frontend (.env.local)**
-- `API_URL` - Backend API URL
-- `NEXTAUTH_SECRET` - Session encryption secret
+```bash
+# Database
+DATABASE_URL=postgres://postgres:password@localhost:5432/localDB?sslmode=disable
+REDIS_URL=redis://localhost:6379
+
+# Backend Configuration
+JWT_SECRET=your-jwt-secret-change-in-production
+RESEND_API_KEY=your-resend-api-key
+PORT=8080
+HOST=0.0.0.0
+
+# Frontend Configuration
+API_URL=http://localhost:8080
+NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# CI/CD (Optional)
+RAILWAY_TOKEN=
+RAILWAY_PROJECT_ID=
+SLACK_WEBHOOK=
+```
 
 ## 🎯 Authentication Flow
 
@@ -142,7 +163,22 @@ npm run dev
 
 ## 🚀 Deployment
 
-### Docker Deployment (Recommended)
+### Railway Deployment (Recommended)
+
+This template is configured for Railway deployment using a single Docker container:
+
+```bash
+# Setup Railway
+railway login
+railway init
+
+# Deploy
+railway up
+```
+
+The `railway.json` configuration handles both frontend and backend deployment.
+
+### Docker Deployment
 
 #### Development
 ```bash
@@ -167,19 +203,25 @@ docker-compose -f docker-compose.prod.yml up -d
 docker run -d \
   -p 3000:3000 \
   -p 8080:8080 \
-  --env-file .env \
+  --env-file .env.local \
   go-auth-template:latest
 ```
 
-### Traditional Deployment
+### Manual Deployment
 
-#### Backend
-- Build: `go build -o main cmd/server/main.go`
-- Deploy to any Go-compatible platform
+#### Backend Only
+```bash
+cd authserver
+make build
+# Deploy the binary in bin/authserver
+```
 
-#### Frontend
-- Build: `npm run build`
-- Deploy to Vercel, Netlify, or any Node.js platform
+#### Frontend Only
+```bash
+cd front-end
+npm run build
+# Deploy the .next folder
+```
 
 ## 🤝 Contributing
 

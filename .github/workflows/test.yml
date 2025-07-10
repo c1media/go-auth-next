@@ -2,19 +2,19 @@ name: 🧪 Test Suite
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   schedule:
     # Run tests daily at 6 AM UTC
-    - cron: '0 6 * * *'
+    - cron: "0 6 * * *"
 
 jobs:
   # Integration Tests
   integration-tests:
     name: 🔗 Integration Tests
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: postgres:15
@@ -28,7 +28,7 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
+
       redis:
         image: redis:7
         options: >-
@@ -40,104 +40,110 @@ jobs:
           - 6379:6379
 
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
 
-    - name: 🐹 Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
+      - name: 🐹 Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
 
-    - name: 📦 Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: front-end/package-lock.json
+      - name: 📦 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: front-end/package-lock.json
 
-    - name: 📥 Install backend dependencies
-      working-directory: ./authserver
-      run: go mod download
+      - name: 📥 Install backend dependencies
+        working-directory: ./authserver
+        run: go mod download
 
-    - name: 📥 Install frontend dependencies
-      working-directory: ./front-end
-      run: npm ci
+      - name: 📥 Install frontend dependencies
+        working-directory: ./front-end
+        run: npm ci
 
-    - name: 🏗️ Build backend
-      working-directory: ./authserver
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/integration_test?sslmode=disable
-        REDIS_URL: redis://localhost:6379
-        JWT_SECRET: integration-test-secret
-      run: go build -o main cmd/server/main.go
+      - name: 🏗️ Build backend
+        working-directory: ./authserver
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/integration_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: integration-test-secret
+        run: go build -o main cmd/server/main.go
 
-    - name: 🏗️ Build frontend
-      working-directory: ./front-end
-      env:
-        API_URL: http://localhost:8080
-        NEXT_PUBLIC_API_URL: http://localhost:8080
-        NEXTAUTH_SECRET: integration-test-secret
-      run: npm run build
+      - name: 🏗️ Build frontend
+        working-directory: ./front-end
+        env:
+          API_URL: http://localhost:8080
+          NEXT_PUBLIC_API_URL: http://localhost:8080
+        run: npm run build
 
-    - name: 🚀 Start backend server
-      working-directory: ./authserver
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost:5432/integration_test?sslmode=disable
-        REDIS_URL: redis://localhost:6379
-        JWT_SECRET: integration-test-secret
-        PORT: 8080
-      run: ./main &
+      - name: 🗃️ Run database migrations
+        working-directory: ./authserver
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/integration_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: integration-test-secret
+        run: ./main -migrate-only
 
-    - name: 🚀 Start frontend server
-      working-directory: ./front-end
-      env:
-        API_URL: http://localhost:8080
-        NEXT_PUBLIC_API_URL: http://localhost:8080
-        NEXTAUTH_SECRET: integration-test-secret
-      run: npm start &
+      - name: 🚀 Start backend server
+        working-directory: ./authserver
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/integration_test?sslmode=disable
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: integration-test-secret
+          PORT: 8080
+        run: ./main &
 
-    - name: ⏳ Wait for services to be ready
-      run: |
-        echo "Waiting for backend to be ready..."
-        timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 2; done'
-        echo "Waiting for frontend to be ready..."
-        timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
+      - name: 🚀 Start frontend server
+        working-directory: ./front-end
+        env:
+          API_URL: http://localhost:8080
+          NEXT_PUBLIC_API_URL: http://localhost:8080
+        run: npm start &
 
-    - name: 🧪 Run API integration tests
-      run: |
-        echo "🧪 Testing API endpoints..."
-        
-        # Test health endpoint
-        curl -f http://localhost:8080/health
-        
-        # Test auth endpoints
-        response=$(curl -s -X POST http://localhost:8080/api/v1/auth/send-code \
-          -H "Content-Type: application/json" \
-          -H "X-Client-Type: api" \
-          -d '{"email":"test@example.com","name":"Test User"}')
-        echo "Send code response: $response"
-        
-        # Test check user endpoint
-        response=$(curl -s -X POST http://localhost:8080/api/v1/auth/check-user \
-          -H "Content-Type: application/json" \
-          -H "X-Client-Type: api" \
-          -d '{"email":"test@example.com"}')
-        echo "Check user response: $response"
+      - name: ⏳ Wait for services to be ready
+        run: |
+          echo "Waiting for backend to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:8080/health; do sleep 2; done'
+          echo "Waiting for frontend to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:3000; do sleep 2; done'
 
-    - name: 🧪 Run frontend integration tests
-      run: |
-        echo "🧪 Testing frontend pages..."
-        
-        # Test main pages
-        curl -f http://localhost:3000/
-        curl -f http://localhost:3000/login
-        curl -f http://localhost:3000/signup
-        
-        # Test API routes
-        curl -f http://localhost:3000/api/auth/check-user \
-          -X POST \
-          -H "Content-Type: application/json" \
-          -d '{"email":"test@example.com"}'
+      - name: 🧪 Run API integration tests
+        run: |
+          echo "🧪 Testing API endpoints..."
+
+          # Test health endpoint
+          curl -f http://localhost:8080/health
+
+          # Test auth endpoints
+          response=$(curl -s -X POST http://localhost:8080/api/v1/auth/send-code \
+            -H "Content-Type: application/json" \
+            -H "X-Client-Type: api" \
+            -d '{"email":"test@example.com","name":"Test User"}')
+          echo "Send code response: $response"
+
+          # Test check user endpoint
+          response=$(curl -s -X POST http://localhost:8080/api/v1/auth/check-user \
+            -H "Content-Type: application/json" \
+            -H "X-Client-Type: api" \
+            -d '{"email":"test@example.com"}')
+          echo "Check user response: $response"
+
+      - name: 🧪 Run frontend integration tests
+        run: |
+          echo "🧪 Testing frontend pages..."
+
+          # Test main pages
+          curl -f http://localhost:3000/
+          curl -f http://localhost:3000/login
+          curl -f http://localhost:3000/signup
+
+          # Test API routes
+          curl -f http://localhost:3000/api/auth/check-user \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"email":"test@example.com"}'
 
   # Load Testing
   load-tests:
@@ -146,57 +152,57 @@ jobs:
     if: github.event_name == 'schedule' || contains(github.event.pull_request.labels.*.name, 'load-test')
 
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
 
-    - name: 🐳 Start services with Docker Compose
-      run: |
-        docker-compose up -d
-        sleep 30  # Wait for services to start
+      - name: 🐳 Start services with Docker Compose
+        run: |
+          docker-compose up -d
+          sleep 30  # Wait for services to start
 
-    - name: ⚡ Install k6
-      run: |
-        sudo gpg -k
-        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-        sudo apt-get update
-        sudo apt-get install k6
+      - name: ⚡ Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
 
-    - name: 🧪 Run load tests
-      run: |
-        cat > load-test.js << 'EOF'
-        import http from 'k6/http';
-        import { check, sleep } from 'k6';
+      - name: 🧪 Run load tests
+        run: |
+          cat > load-test.js << 'EOF'
+          import http from 'k6/http';
+          import { check, sleep } from 'k6';
 
-        export let options = {
-          stages: [
-            { duration: '30s', target: 10 },
-            { duration: '1m', target: 20 },
-            { duration: '30s', target: 0 },
-          ],
-        };
+          export let options = {
+            stages: [
+              { duration: '30s', target: 10 },
+              { duration: '1m', target: 20 },
+              { duration: '30s', target: 0 },
+            ],
+          };
 
-        export default function () {
-          // Test health endpoint
-          let response = http.get('http://localhost:8080/health');
-          check(response, {
-            'health check status is 200': (r) => r.status === 200,
-          });
+          export default function () {
+            // Test health endpoint
+            let response = http.get('http://localhost:8080/health');
+            check(response, {
+              'health check status is 200': (r) => r.status === 200,
+            });
 
-          // Test frontend
-          response = http.get('http://localhost:3000/');
-          check(response, {
-            'frontend status is 200': (r) => r.status === 200,
-          });
+            // Test frontend
+            response = http.get('http://localhost:3000/');
+            check(response, {
+              'frontend status is 200': (r) => r.status === 200,
+            });
 
-          sleep(1);
-        }
-        EOF
-        
-        k6 run load-test.js
+            sleep(1);
+          }
+          EOF
 
-    - name: 🛑 Stop services
-      run: docker-compose down
+          k6 run load-test.js
+
+      - name: 🛑 Stop services
+        run: docker-compose down
 
   # Security Tests
   security-tests:
@@ -204,37 +210,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 📥 Checkout code
-      uses: actions/checkout@v4
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
 
-    - name: 🔍 Run Semgrep security scan
-      uses: returntocorp/semgrep-action@v1
-      with:
-        config: >-
-          p/security-audit
-          p/secrets
-          p/golang
-          p/typescript
+      - name: 🔍 Run Semgrep security scan
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/golang
+            p/typescript
 
-    - name: 🐹 Set up Go for gosec
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
+      - name: 🐹 Set up Go for gosec
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
 
-    - name: 🔍 Run gosec security scanner
-      run: |
-        go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-        cd authserver
-        gosec -fmt sarif -out ../gosec-results.sarif ./...
+      - name: 🔍 Run gosec security scanner
+        run: |
+          go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+          cd authserver
+          gosec -fmt sarif -out ../gosec-results.sarif ./...
 
-    - name: 📊 Upload gosec results
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: gosec-results.sarif
+      - name: 📊 Upload gosec results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: gosec-results.sarif
 
-    - name: 🔍 Run npm audit
-      working-directory: ./front-end
-      run: |
-        npm ci
-        npm audit --audit-level moderate
+      - name: 🔍 Run npm audit
+        working-directory: ./front-end
+        run: |
+          npm ci
+          npm audit --audit-level moderate

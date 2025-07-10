@@ -21,7 +21,6 @@ git add . && git commit -m "Initial commit" && git push
 
 # 3. Environment Variables (in Vercel dashboard)
 NEXT_PUBLIC_API_URL=https://your-backend.railway.app
-NEXTAUTH_SECRET=your-secret-here
 ```
 
 ### **Backend → Railway**
@@ -148,7 +147,6 @@ docker-compose -f docker-compose.prod.yml up -d
    ```bash
    vercel env add API_URL
    vercel env add NEXT_PUBLIC_API_URL
-   vercel env add NEXTAUTH_SECRET
    ```
 
 3. **Deploy Backend to Railway/Fly.io:**
@@ -260,9 +258,6 @@ SMTP_PASS=your-sendgrid-api-key
 API_URL=https://your-backend.railway.app
 NEXT_PUBLIC_API_URL=https://your-backend.railway.app
 
-# NextAuth
-NEXTAUTH_URL=https://yourapp.com
-NEXTAUTH_SECRET=your-nextauth-secret
 
 # Production
 NODE_ENV=production

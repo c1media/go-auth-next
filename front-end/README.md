@@ -46,8 +46,6 @@ A modern Next.js frontend for the Go Auth Template with WebAuthn (passkey) suppo
 |----------|-------------|---------|
 | `API_URL` | Go backend API URL | `http://localhost:8080` |
 | `NEXT_PUBLIC_API_URL` | Public API URL for client-side | `http://localhost:8080` |
-| `NEXTAUTH_URL` | App URL | `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | Session secret | Required in production |
 
 ## Project Structure
 

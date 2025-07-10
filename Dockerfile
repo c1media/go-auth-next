@@ -47,7 +47,7 @@ COPY --from=frontend-builder /app/frontend/node_modules ./frontend/node_modules
 
 # Create startup script
 RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'cd /app && ./backend &' >> /app/start.sh && \
+    echo 'cd /app && MIGRATE=true ./backend &' >> /app/start.sh && \
     echo 'cd /app/frontend && npm start &' >> /app/start.sh && \
     echo 'wait' >> /app/start.sh && \
     chmod +x /app/start.sh

@@ -38,6 +38,7 @@ func main() {
 	var (
 		runMigrations = flag.Bool("migrate", false, "Run migrations before starting server")
 		migrateOnly   = flag.Bool("migrate-only", false, "Run migrations only and exit")
+		seedOnly      = flag.Bool("seed-only", false, "Run admin seeding only and exit")
 		showHelp      = flag.Bool("help", false, "Show help message")
 	)
 	flag.Parse()
@@ -92,11 +93,29 @@ func main() {
 		}
 		logger.Info("Database migrations completed successfully")
 
+		// Seed admin user on first migration
+		logger.Info("Checking for admin user...")
+		if err := database.SeedAdminUser(db); err != nil {
+			logger.Error("Failed to seed admin user", "error", err)
+			os.Exit(1)
+		}
+
 		// Exit if migrate-only flag is set
 		if *migrateOnly {
 			logger.Info("Migration-only mode: exiting after migrations")
 			os.Exit(0)
 		}
+	}
+
+	// Run admin seeding only if requested
+	if *seedOnly {
+		logger.Info("Running admin user seeding...")
+		if err := database.SeedAdminUser(db); err != nil {
+			logger.Error("Failed to seed admin user", "error", err)
+			os.Exit(1)
+		}
+		logger.Info("Admin seeding completed, exiting...")
+		os.Exit(0)
 	}
 
 	// Create context for graceful shutdown

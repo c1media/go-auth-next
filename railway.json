@@ -8,5 +8,14 @@
     "numReplicas": 1,
     "sleepApplication": false,
     "restartPolicyType": "ON_FAILURE"
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "MIGRATE": "true",
+        "ADMIN_EMAIL": "${{ADMIN_EMAIL}}",
+        "ADMIN_NAME": "${{ADMIN_NAME}}"
+      }
+    }
   }
 }

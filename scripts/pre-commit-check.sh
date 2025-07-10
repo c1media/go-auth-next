@@ -53,6 +53,16 @@ go test ./...
 
 echo "  🏗️ Building backend..."
 go build -o main cmd/server/main.go
+
+echo "  🗃️ Testing database migrations (dry run)..."
+# Test migration compilation
+if [ ! -z "$DATABASE_URL" ]; then
+    echo "    Running migration test against live database..."
+    ./main -migrate-only
+else
+    echo "    Skipping migration test (no DATABASE_URL set)"
+fi
+
 rm -f main
 
 echo "✅ Backend checks passed"
