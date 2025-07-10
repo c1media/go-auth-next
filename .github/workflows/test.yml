@@ -47,6 +47,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.23"
+          cache-dependency-path: authserver/go.sum
 
       - name: 📦 Set up Node.js
         uses: actions/setup-node@v4
@@ -226,6 +227,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.23"
+          cache-dependency-path: authserver/go.sum
 
       - name: 🔍 Run gosec security scanner
         working-directory: ./authserver
