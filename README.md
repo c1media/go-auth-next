@@ -2,269 +2,175 @@
 
 A complete authentication template with Go backend and Next.js frontend, featuring WebAuthn (passkey) support and magic link email authentication.
 
-## 🚀 Features
+## ✨ Features
 
-- **Dual Authentication Methods**
-  - 📧 Magic link email authentication
-  - 🔐 WebAuthn passkeys (biometric/hardware keys)
-- **Modern Tech Stack**
-  - Go backend with Gin framework
-  - Next.js 15 frontend with App Router
-  - PostgreSQL database with GORM
-  - Redis caching
-- **Production Ready**
-  - JWT session management
-  - CSRF protection
-  - Multi-client support (web, mobile, API)
-  - Role-based access control
-  - Type-safe codebase
+- 📧 **Magic Link Email Authentication** 
+- 🔐 **WebAuthn Passkeys** (biometric/hardware keys)
+- 🎯 **Modern Stack**: Go + Next.js 15 + PostgreSQL + Redis
+- 🔒 **Security**: JWT sessions, CSRF protection, rate limiting
+- 🚀 **Production Ready**: CI/CD, Docker, Railway deployment
+- 🧪 **Full Test Suite**: Integration tests, security scanning, load testing
 
-## 📁 Project Structure
-
-```
-go-auth-template/
-├── authserver/          # Go backend
-│   ├── cmd/server/     # Application entry point
-│   ├── internal/       # Private application code
-│   └── pkg/           # Public libraries
-└── front-end/          # Next.js frontend
-    ├── src/app/       # App Router pages
-    ├── src/components/ # React components
-    └── src/lib/       # Utilities
-```
-
-## 🛠️ Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-- Go 1.21+
-- Node.js 18+
-- PostgreSQL
-- Redis (optional)
-- Make (for development commands)
+- Go 1.23+
+- Node.js 22+
+- PostgreSQL + Redis (or use Docker)
 
-### Setup
+### Development Setup
 ```bash
-# Clone and setup
-git clone <repository-url>
-cd go-auth-template
+# Clone template
+git clone https://github.com/c1media/go-auth-next.git my-project
+cd my-project
 
 # Setup environment
 cp .env.example .env.local
-# Edit .env.local with your values
+# Edit .env.local with your database settings
 
-# Install dependencies and tools
+# Start with Docker (easiest)
+make docker-dev
+
+# OR start manually
 make install-deps
-make install-tools
-
-# Create database
-createdb localDB
-
-# Start development environment
 make dev
 ```
 
-### Development Commands
+**Access:** Frontend at http://localhost:3000, Backend at http://localhost:8080
+
+## 🛠️ Development Commands
+
 ```bash
-# Development
-make dev             # Start both backend and frontend
-make run-backend     # Backend only
-make run-backend-air # Backend with hot reload
-make run-frontend    # Frontend only
-
-# Docker
-make docker-dev      # Start full Docker environment
-make docker-build    # Build Docker images
-make docker-stop     # Stop Docker containers
-make docker-logs     # View Docker logs
-
-# Database
-make migrate         # Run migrations
-make migrate-only    # Migrations only (no server)
-
-# Testing & Build
-make test            # Run all tests
-make test-ci         # Test with act (local CI)
-make build           # Build backend binary
-
-# Setup
-make install-deps    # Install all dependencies
-make install-tools   # Install development tools (air, act)
-
-# Utilities
-make stop            # Stop all processes
-make clean           # Clean build artifacts
-make help            # Show all commands
+make dev          # Start both backend + frontend
+make docker-dev   # Start full Docker environment  
+make test         # Run all tests
+make build        # Build for production
+make help         # Show all commands
 ```
 
-### Access the Application
-- Frontend: http://localhost:3000 (or 3001 if 3000 is busy)
-- Backend API: http://localhost:8080
+## ⚡ Quick Deploy to Railway
 
-## 📚 Documentation
-
-- [Backend Documentation](./authserver/README.md)
-- [Frontend Documentation](./front-end/README.md)
-
-## 🔧 Configuration
-
-### Environment Variables
-
-All environment variables are configured in the root `.env.local` file:
-
+### 1. Template Setup (First Time)
 ```bash
-# Database
-DATABASE_URL=postgres://postgres:password@localhost:5432/localDB?sslmode=disable
-REDIS_URL=redis://localhost:6379
+# Clone template for your project
+git clone https://github.com/c1media/go-auth-next.git my-project
+cd my-project
+rm -rf .git && git init
 
-# Backend Configuration
-JWT_SECRET=your-jwt-secret-change-in-production
-RESEND_API_KEY=your-resend-api-key
-PORT=8080
-HOST=0.0.0.0
+# Update workflows for production (uncomment environment lines)
+# In .github/workflows/cd.yml:
+# environment: staging     # Uncomment
+# environment: production  # Uncomment
 
-# Frontend Configuration
-API_URL=http://localhost:8080
-NEXT_PUBLIC_API_URL=http://localhost:8080
-
-# CI/CD (Optional)
-RAILWAY_TOKEN=
-RAILWAY_PROJECT_ID=
-SLACK_WEBHOOK=
+# Commit your project
+git add . && git commit -m "Initial commit from template"
+git remote add origin https://github.com/yourusername/your-project.git
+git push -u origin main
 ```
 
-## 🎯 Authentication Flow
-
-### Email Magic Link
-1. User enters email address
-2. System sends verification code via email
-3. User enters code to authenticate
-4. Session created with JWT token
-
-### WebAuthn Passkeys
-1. User registers passkey (optional)
-2. User selects passkey authentication
-3. Browser prompts for biometric/security key
-4. Instant authentication on success
-
-## 🏗️ Architecture
-
-### Backend (Go)
-- **Clean Architecture** with domain-driven design
-- **GORM** for database operations
-- **Gin** for HTTP routing and middleware
-- **JWT** for stateless authentication
-- **Redis** for caching and sessions
-
-### Frontend (Next.js)
-- **App Router** with Server Components
-- **TypeScript** for type safety
-- **Tailwind CSS** for styling
-- **Radix UI** for accessible components
-- **Server Actions** for form handling
-
-## 🔒 Security Features
-
-- **CSRF Protection** for web clients
-- **Client Type Detection** for multi-platform support
-- **Secure Session Management** with HTTP-only cookies
-- **Rate Limiting** and request validation
-- **WebAuthn** standard for passwordless authentication
-
-## 🚀 Deployment
-
-### Railway Deployment (Recommended)
-
-This template is configured for Railway deployment using a single Docker container:
-
+### 2. Railway Deployment
 ```bash
-# 1. Initial deployment (app will fail initially - that's expected)
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and deploy
 railway login
 railway init
 railway up
 
-# 2. Add database services
+# Add services (Railway will auto-connect them)
 railway add postgresql
-railway add redis  # optional
-
-# 3. Redeploy with database connections
-railway up
+railway add redis
 ```
 
-**What happens:**
-- Your app container includes both backend (Go) and frontend (Next.js)
-- Railway provides managed PostgreSQL and Redis as separate services
-- Database migrations run automatically on deployment
-- Environment variables (`DATABASE_URL`, `REDIS_URL`) are auto-injected
+### 3. GitHub Environments (Optional)
+For deployment protection:
+1. Go to GitHub Settings → Environments
+2. Create `staging` and `production` environments
+3. Add protection rules and required reviewers
 
-**On updates:**
-- `git push` or `railway up` redeploys your app
-- Database and Redis data persist across deployments
-- Migrations run automatically for schema updates
+### 4. Required Secrets
+Add these to your GitHub repository secrets:
+- `RESEND_API_KEY` - For email sending
+- `RAILWAY_TOKEN` - For deployments (get from Railway dashboard)
+- `RAILWAY_PROJECT_ID` - Your Railway project ID
 
-### Docker Deployment
+## 🔧 Configuration
 
-#### Development
+All settings in `.env.local`:
+
 ```bash
-docker-compose up -d
+# Database (Railway auto-provides these)
+DATABASE_URL=postgres://postgres:password@localhost:5432/localDB?sslmode=disable
+REDIS_URL=redis://localhost:6379
+
+# Required
+JWT_SECRET=your-secure-jwt-secret-256-bits
+RESEND_API_KEY=re_your_resend_api_key
+FROM_EMAIL=your-app@domain.com
+
+# Frontend
+API_URL=http://localhost:8080
+NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
-#### Production
-```bash
-# Build images
-./docker-build.sh compose production
+## 🏗️ Project Structure
 
-# Deploy with production compose
-docker-compose -f docker-compose.prod.yml up -d
+```
+├── authserver/          # Go backend (Gin + GORM)
+├── front-end/           # Next.js 15 frontend  
+├── .github/workflows/   # CI/CD pipelines
+├── Dockerfile           # Single container for Railway
+└── Makefile            # Development commands
 ```
 
-#### Single Container
-```bash
-# Build single container
-./docker-build.sh single
+## 🎯 Authentication Flow
 
-# Run in production
-docker run -d \
-  -p 3000:3000 \
-  -p 8080:8080 \
-  --env-file .env.local \
-  go-auth-template:latest
-```
+**Magic Link:**
+1. User enters email → receives verification code
+2. User enters code → authenticated with JWT
 
-### Manual Deployment
+**WebAuthn Passkeys:**
+1. User registers passkey (Face ID, Touch ID, hardware key)
+2. Future logins: instant biometric authentication
 
-#### Backend Only
-```bash
-cd authserver
-make build
-# Deploy the binary in bin/authserver
-```
+## 🧪 CI/CD Pipeline
 
-#### Frontend Only
-```bash
-cd front-end
-npm run build
-# Deploy the .next folder
-```
+Automated testing on every push:
+- ✅ **Backend Tests**: Go unit tests, security scanning
+- ✅ **Frontend Tests**: Next.js build, type checking, linting  
+- ✅ **Security**: Trivy vulnerability scanning, gosec analysis
+- ✅ **Integration**: Full stack API testing
+- ✅ **Docker**: Multi-platform container builds
 
-## 🤝 Contributing
+## 🚀 Deployment
 
-1. Fork the repository
-2. Create a feature branch
-3. Follow the existing code style
-4. Add tests for new features
-5. Submit a pull request
+**Railway (Recommended):**
+- Single container deployment
+- Managed PostgreSQL + Redis
+- Auto-scaling and zero-downtime deploys
+- Built-in SSL certificates
 
-## 📄 License
+**Docker:**
+- Production-ready Dockerfile included
+- Multi-stage build optimized for size
+- Supports any container platform
 
-[Your License Here]
+## 🔒 Security
+
+- **WebAuthn** standard implementation
+- **JWT** with secure HTTP-only cookies
+- **CSRF** protection for web clients
+- **Rate limiting** on auth endpoints
+- **Input validation** and sanitization
+- **Security scanning** in CI/CD
 
 ## 🆘 Support
 
-For questions and support:
-- Check the documentation in each project folder
-- Review the example implementations
-- Open an issue for bugs or feature requests
+- 📖 Check individual README files in `authserver/` and `front-end/`
+- 🐛 Open issues for bugs or feature requests
+- 💡 Review the code examples and tests
 
 ---
 
-**Happy coding!** 🎉
+**Ready to build your auth system!** 🎉
