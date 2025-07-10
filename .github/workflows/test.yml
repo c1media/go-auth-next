@@ -239,6 +239,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+          go env -w GOPRIVATE=github.com/securecodewarrior/*
+          go env -w GONOSUMDB=github.com/securecodewarrior/*
           go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
           $(go env GOPATH)/bin/gosec -fmt sarif -out gosec-results.sarif ./...
 
