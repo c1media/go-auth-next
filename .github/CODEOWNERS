@@ -1,0 +1,30 @@
+# Global owners - these users will be requested for review for all changes
+* @anasmahmud
+
+# Backend code owners
+/authserver/ @anasmahmud
+*.go @anasmahmud
+
+# Frontend code owners  
+/front-end/ @anasmahmud
+*.ts @anasmahmud
+*.tsx @anasmahmud
+*.js @anasmahmud
+*.jsx @anasmahmud
+
+# Infrastructure and deployment
+/docker-compose*.yml @anasmahmud
+/Dockerfile* @anasmahmud
+/.github/ @anasmahmud
+
+# Documentation
+*.md @anasmahmud
+/docs/ @anasmahmud
+
+# Configuration files
+package.json @anasmahmud
+go.mod @anasmahmud
+go.sum @anasmahmud
+tsconfig.json @anasmahmud
+next.config.js @anasmahmud
+tailwind.config.js @anasmahmud

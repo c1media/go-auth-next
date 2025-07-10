@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# Development files
+.env*
+.vscode
+.idea
+*.log
+
+# Frontend specific
+front-end/node_modules
+front-end/.next
+front-end/out
+front-end/.env*
+front-end/npm-debug.log*
+front-end/yarn-debug.log*
+front-end/yarn-error.log*
+front-end/.pnpm-debug.log*
+
+# Backend specific  
+authserver/tmp
+authserver/*.log
+authserver/vendor
+
+# OS generated
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build artifacts
+dist
+build
+tmp

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Auth Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .step { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        input, button { padding: 10px; margin: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007bff; color: white; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .success { color: green; }
+        .error { color: red; }
+        .code { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .token { background: #e6f3ff; padding: 10px; margin: 10px 0; border-radius: 4px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <h1>Simple Auth Test</h1>
+    
+    <div class="step">
+        <h2>Step 1: Send Login Code</h2>
+        <input type="email" id="email" placeholder="Enter your email" value="test@example.com">
+        <button onclick="sendCode()">Send Code</button>
+        <div id="sendResult"></div>
+    </div>
+    
+    <div class="step">
+        <h2>Step 2: Verify Code</h2>
+        <p>Since Resend isn't configured, check the server logs for the 6-digit code.</p>
+        <input type="text" id="code" placeholder="Enter 6-digit code" maxlength="6">
+        <button onclick="verifyCode()">Verify Code</button>
+        <div id="verifyResult"></div>
+    </div>
+    
+    <div class="step">
+        <h2>Step 3: Test Protected Route</h2>
+        <button onclick="testProtected()">Test Protected Route</button>
+        <div id="protectedResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/v1';
+        let authToken = '';
+
+        async function sendCode() {
+            const email = document.getElementById('email').value;
+            const resultDiv = document.getElementById('sendResult');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/send-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✓ ${data.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Network error: ${error.message}</div>`;
+            }
+        }
+
+        async function verifyCode() {
+            const email = document.getElementById('email').value;
+            const code = document.getElementById('code').value;
+            const resultDiv = document.getElementById('verifyResult');
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/verify-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ ${data.message}</div>
+                        <div class="code">User: ${JSON.stringify(data.user, null, 2)}</div>
+                        <div class="token">Token: ${data.token}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Network error: ${error.message}</div>`;
+            }
+        }
+
+        async function testProtected() {
+            const resultDiv = document.getElementById('protectedResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = `<div class="error">✗ Please login first</div>`;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/protected/profile`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✓ Protected route accessed successfully</div>
+                        <div class="code">${JSON.stringify(data, null, 2)}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">✗ ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ Network error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
