@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
-  experimental: {
-    serverComponentsExternalPackages: ['jsonwebtoken'],
-  },
+  output: "standalone",
+  serverExternalPackages: ["jsonwebtoken"],
 };
 
 export default nextConfig;
