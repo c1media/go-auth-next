@@ -229,6 +229,9 @@ jobs:
           go-version: "1.23"
           cache-dependency-path: authserver/go.sum
 
+      - name: 🔐 Configure GitHub token for Go modules
+        run: git config --global url."https://${{ secrets.GITHUB_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
       - name: 🔍 Run gosec security scanner
         working-directory: ./authserver
         run: |
