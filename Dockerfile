@@ -51,9 +51,12 @@ WORKDIR /app
 # Copy built applications
 COPY --from=backend-builder /app/backend/main ./backend
 COPY --from=frontend-builder /app/frontend/.next ./frontend/.next
-COPY --from=frontend-builder /app/frontend/public ./frontend/public
 COPY --from=frontend-builder /app/frontend/package.json ./frontend/
 COPY --from=frontend-builder /app/frontend/node_modules ./frontend/node_modules
+
+# Copy public directory - create it first if it doesn't exist
+RUN mkdir -p ./frontend/public
+COPY --from=frontend-builder /app/frontend/public ./frontend/public
 
 # Copy environment file (if exists)
 COPY .env.local* /app/
