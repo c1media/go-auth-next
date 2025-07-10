@@ -20,7 +20,7 @@ cd ..
 
 # Start the front-end server
 cd front-end
-npm run dev &
+PORT=3000 npm run dev &
 FRONTEND_PID=$!
 
 # Wait for both processes

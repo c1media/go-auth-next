@@ -29,18 +29,19 @@ services:
       timeout: 5s
       retries: 5
 
-  # Go Backend
-  backend:
+  # Full Application (Backend + Frontend)
+  app:
     build:
       context: .
-      dockerfile: authserver/Dockerfile
+      dockerfile: Dockerfile
+    env_file:
+      - .env.local
     environment:
+      # Override for Docker networking
       - DATABASE_URL=postgres://postgres:password@postgres:5432/auth_template?sslmode=disable
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=your-jwt-secret-change-in-production
-      - PORT=8080
-      - HOST=0.0.0.0
     ports:
+      - "3000:3000"
       - "8080:8080"
     depends_on:
       postgres:
@@ -49,26 +50,6 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
-
-  # Next.js Frontend
-  frontend:
-    build:
-      context: .
-      dockerfile: front-end/Dockerfile
-    environment:
-      - API_URL=http://backend:8080
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-    ports:
-      - "3000:3000"
-    depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3

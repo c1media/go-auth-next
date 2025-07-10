@@ -65,21 +65,30 @@ make dev
 
 ### Development Commands
 ```bash
-# Start both backend and frontend
-make dev
+# Development
+make dev             # Start both backend and frontend
+make run-backend     # Backend only
+make run-backend-air # Backend with hot reload
+make run-frontend    # Frontend only
 
-# Start individually
-make run-backend      # Backend only
-make run-backend-air  # Backend with hot reload
-make run-frontend     # Frontend only
+# Docker
+make docker-dev      # Start full Docker environment
+make docker-build    # Build Docker images
+make docker-stop     # Stop Docker containers
+make docker-logs     # View Docker logs
 
-# Database operations
-make migrate          # Run migrations
-make migrate-only     # Migrations only (no server)
+# Database
+make migrate         # Run migrations
+make migrate-only    # Migrations only (no server)
 
-# Testing
+# Testing & Build
 make test            # Run all tests
 make test-ci         # Test with act (local CI)
+make build           # Build backend binary
+
+# Setup
+make install-deps    # Install all dependencies
+make install-tools   # Install development tools (air, act)
 
 # Utilities
 make stop            # Stop all processes
@@ -168,15 +177,29 @@ SLACK_WEBHOOK=
 This template is configured for Railway deployment using a single Docker container:
 
 ```bash
-# Setup Railway
+# 1. Initial deployment (app will fail initially - that's expected)
 railway login
 railway init
+railway up
 
-# Deploy
+# 2. Add database services
+railway add postgresql
+railway add redis  # optional
+
+# 3. Redeploy with database connections
 railway up
 ```
 
-The `railway.json` configuration handles both frontend and backend deployment.
+**What happens:**
+- Your app container includes both backend (Go) and frontend (Next.js)
+- Railway provides managed PostgreSQL and Redis as separate services
+- Database migrations run automatically on deployment
+- Environment variables (`DATABASE_URL`, `REDIS_URL`) are auto-injected
+
+**On updates:**
+- `git push` or `railway up` redeploys your app
+- Database and Redis data persist across deployments
+- Migrations run automatically for schema updates
 
 ### Docker Deployment
 

@@ -50,18 +50,20 @@ export async function getSession(): Promise<SessionData | null> {
 
     // Check if token is expired
     if (decoded.exp < Math.floor(Date.now() / 1000)) {
-      await destroySession();
+      // Don't call destroySession here - just return null
+      // Cookie will be handled by the client or a Server Action
       return null;
     }
 
     return decoded;
   } catch {
-    await destroySession();
+    // Don't call destroySession here - just return null  
     return null;
   }
 }
 
 export async function destroySession(): Promise<void> {
+  "use server";
   const cookieStore = await cookies();
   cookieStore.delete("session");
 }
