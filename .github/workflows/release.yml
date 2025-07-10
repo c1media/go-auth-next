@@ -64,12 +64,12 @@ jobs:
       - name: 🐹 Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          go-version: "1.23"
 
       - name: 📦 Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
 
       - name: 🏗️ Build application binaries
         run: |
@@ -178,7 +178,7 @@ jobs:
             Repository: ${{ github.repository }}
             Download: https://github.com/${{ github.repository }}/releases/latest
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
 
       - name: 📧 Create release announcement issue
         uses: actions/github-script@v7

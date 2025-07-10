@@ -115,7 +115,7 @@ jobs:
           # uses: 8398a7/action-slack@v3
           # with:
           #   status: ${{ job.status }}
-          #   webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          #   webhook_url: ${{ secrets.SLACK_WEBHOOK }}
 
   # Deploy to Production
   deploy-production:
