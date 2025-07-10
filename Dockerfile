@@ -13,8 +13,13 @@ WORKDIR /app/frontend
 COPY front-end/package*.json ./
 RUN npm ci
 
-# Copy source code and build
+# Copy source code (excluding public which we'll handle separately)
 COPY front-end/ ./
+
+# Ensure public directory exists with any assets
+RUN mkdir -p ./public
+
+# Build the application
 RUN npm run build
 
 # Stage 2: Build Go backend
@@ -54,8 +59,7 @@ COPY --from=frontend-builder /app/frontend/.next ./frontend/.next
 COPY --from=frontend-builder /app/frontend/package.json ./frontend/
 COPY --from=frontend-builder /app/frontend/node_modules ./frontend/node_modules
 
-# Copy public directory - create it first if it doesn't exist
-RUN mkdir -p ./frontend/public
+# Copy public directory (now guaranteed to exist)
 COPY --from=frontend-builder /app/frontend/public ./frontend/public
 
 # Copy environment file (if exists)
