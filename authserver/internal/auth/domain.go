@@ -7,6 +7,7 @@ import (
 	"github.com/simple-auth-roles/internal/auth/handlers"
 	"github.com/simple-auth-roles/internal/auth/repository"
 	"github.com/simple-auth-roles/internal/auth/service"
+	"github.com/simple-auth-roles/internal/config"
 	"github.com/simple-auth-roles/pkg/cache"
 	"github.com/simple-auth-roles/pkg/email"
 	"gorm.io/gorm"
@@ -20,12 +21,12 @@ type Domain struct {
 }
 
 // NewDomain creates a new authentication domain
-func NewDomain(db *gorm.DB, cacheService cache.CacheService, emailService email.EmailService, logger *slog.Logger) *Domain {
+func NewDomain(db *gorm.DB, cacheService cache.CacheService, emailService email.EmailService, logger *slog.Logger, cfg *config.Config) *Domain {
 	// Create repository
 	userRepo := repository.NewUserRepository(db)
 
 	// Create service
-	authService := service.NewAuthService(userRepo, cacheService, emailService, logger)
+	authService := service.NewAuthService(userRepo, cacheService, emailService, logger, cfg)
 
 	// Create handler
 	authHandler := handlers.NewAuthHandler(authService, logger)

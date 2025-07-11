@@ -12,6 +12,7 @@ import (
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/simple-auth-roles/internal/auth/repository"
+	"github.com/simple-auth-roles/internal/config"
 	"github.com/simple-auth-roles/internal/types"
 	"github.com/simple-auth-roles/pkg/cache"
 )
@@ -23,18 +24,18 @@ type WebAuthnService struct {
 	logger   *slog.Logger
 }
 
-func NewWebAuthnService(userRepo *repository.UserRepository, cache cache.CacheService, logger *slog.Logger) *WebAuthnService {
-	config := &webauthn.Config{
-		RPDisplayName: "Auth Template",
-		RPID:          "localhost",
-		RPOrigins:     []string{"http://localhost:3000"},
+func NewWebAuthnService(userRepo *repository.UserRepository, cache cache.CacheService, logger *slog.Logger, cfg *config.Config) *WebAuthnService {
+	webauthnConfig := &webauthn.Config{
+		RPDisplayName: cfg.WebAuthn.RPDisplayName,
+		RPID:          cfg.WebAuthn.RPID,
+		RPOrigins:     cfg.WebAuthn.RPOrigins,
 		Timeouts: webauthn.TimeoutsConfig{
 			Login:        webauthn.TimeoutConfig{Enforce: true, Timeout: 60000},
 			Registration: webauthn.TimeoutConfig{Enforce: true, Timeout: 60000},
 		},
 	}
 
-	webAuthn, err := webauthn.New(config)
+	webAuthn, err := webauthn.New(webauthnConfig)
 	if err != nil {
 		logger.Error("Failed to create WebAuthn instance", "error", err)
 		return nil

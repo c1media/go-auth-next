@@ -127,7 +127,7 @@ func main() {
 	emailService := email.NewEmailService(cfg, logger)
 
 	// Initialize auth domain
-	authDomain := auth.NewDomain(db, cacheService, emailService, logger)
+	authDomain := auth.NewDomain(db, cacheService, emailService, logger, cfg)
 
 	// Setup router
 	if cfg.IsProduction() {

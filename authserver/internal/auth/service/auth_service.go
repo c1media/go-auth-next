@@ -11,6 +11,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/simple-auth-roles/internal/auth/repository"
+	"github.com/simple-auth-roles/internal/config"
 	"github.com/simple-auth-roles/internal/types"
 	"github.com/simple-auth-roles/pkg/cache"
 	"github.com/simple-auth-roles/pkg/email"
@@ -26,20 +27,16 @@ type AuthService struct {
 	webauthnService *WebAuthnService
 }
 
-func NewAuthService(userRepo *repository.UserRepository, cacheService cache.CacheService, emailService email.EmailService, logger *slog.Logger) *AuthService {
-	// Note: These should be moved to config in production
-	jwtSecret := "your-super-secret-jwt-key-change-in-production"
-	jwtExpiry := 7 * 24 * time.Hour // 7 days
-
-	webAuthnService := NewWebAuthnService(userRepo, cacheService, logger)
+func NewAuthService(userRepo *repository.UserRepository, cacheService cache.CacheService, emailService email.EmailService, logger *slog.Logger, cfg *config.Config) *AuthService {
+	webAuthnService := NewWebAuthnService(userRepo, cacheService, logger, cfg)
 
 	return &AuthService{
 		userRepo:        userRepo,
 		cacheService:    cacheService,
 		emailService:    emailService,
 		logger:          logger.With("service", "auth"),
-		jwtSecret:       jwtSecret,
-		jwtExpiry:       jwtExpiry,
+		jwtSecret:       cfg.JWT.Secret,
+		jwtExpiry:       cfg.JWT.Expiration,
 		webauthnService: webAuthnService,
 	}
 }

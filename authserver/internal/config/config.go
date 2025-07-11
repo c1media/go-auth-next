@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type Config struct {
 	Redis    RedisConfig
 	JWT      JWTConfig
 	Email    EmailConfig
+	WebAuthn WebAuthnConfig
 }
 
 type ServerConfig struct {
@@ -49,6 +51,12 @@ type EmailConfig struct {
 	ResendAPIKey string
 }
 
+type WebAuthnConfig struct {
+	RPID        string
+	RPOrigins   []string
+	RPDisplayName string
+}
+
 func Load() (*Config, error) {
 	config := &Config{
 		Server: ServerConfig{
@@ -79,6 +87,11 @@ func Load() (*Config, error) {
 			FromEmail:    getEnv("FROM_EMAIL", "auth@yourapp.com"),
 			FromName:     getEnv("FROM_NAME", "Simple Auth"),
 			ResendAPIKey: getEnv("RESEND_API_KEY", ""),
+		},
+		WebAuthn: WebAuthnConfig{
+			RPID:          getEnv("WEBAUTHN_RPID", "localhost"),
+			RPOrigins:     getEnvAsSlice("WEBAUTHN_RP_ORIGINS", []string{"http://localhost:3000"}),
+			RPDisplayName: getEnv("WEBAUTHN_RP_DISPLAY_NAME", "Auth Template"),
 		},
 	}
 
@@ -120,4 +133,11 @@ func getEnvAsDuration(key string, defaultValue string) time.Duration {
 		return duration
 	}
 	return 30 * time.Second
+}
+
+func getEnvAsSlice(key string, defaultValue []string) []string {
+	if value := os.Getenv(key); value != "" {
+		return strings.Split(value, ",")
+	}
+	return defaultValue
 }
